@@ -1,3 +1,4 @@
+namespace Stockly.API.Models;
 public class OrderItem
 {
     public int Id { get; set; }
