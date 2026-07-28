@@ -2,6 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using Stockly.API.Data;
 using Stockly.API.Repositories;
 using Stockly.API.Repositories.Interfaces;
+using Stockly.API.Services;
+using Stockly.API.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +18,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+
+builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
 
 var app = builder.Build();
 
