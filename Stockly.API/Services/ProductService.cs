@@ -35,9 +35,9 @@ namespace Stockly.API.Services
             
         }
 
-        public async Task DeleteProductAsync(int id)
+        public async Task<bool> DeleteProductAsync(int id)
         {
-            await _productRepository.DeleteAsync(id);
+            return await _productRepository.DeleteAsync(id);
         }
 
         public async Task<IEnumerable<ProductDto>> GetAllProductsAsync()

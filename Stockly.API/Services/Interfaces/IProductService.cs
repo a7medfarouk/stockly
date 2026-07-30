@@ -9,6 +9,6 @@ namespace Stockly.API.Services.Interfaces
         Task<IEnumerable<ProductDto>> SearchProductsByNameAsync(string name);
         Task<ProductDto> CreateProductAsync(CreateProductDto dto);
         Task<ProductDto?> UpdateProductAsync(int id, UpdateProductDto dto);
-        Task DeleteProductAsync(int id);
+        Task<bool> DeleteProductAsync(int id);
     }
 }

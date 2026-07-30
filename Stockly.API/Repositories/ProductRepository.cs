@@ -22,17 +22,19 @@ public class ProductRepository : IProductRepository
         return product;
     }
 
-    public async Task DeleteAsync(int id)
+    public async Task<bool> DeleteAsync(int id)
     {
         var product = await _context.Products.FindAsync(id);
 
         if (product == null)
         {
-            return;
+            return false;
         }
 
         _context.Products.Remove(product);
         await _context.SaveChangesAsync();
+
+        return true;
     }
 
     public async Task<IEnumerable<Product>> GetAllAsync()

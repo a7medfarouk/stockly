@@ -14,6 +14,6 @@ namespace Stockly.API.Repositories.Interfaces
 
         Task<Product?> UpdateAsync(Product product);
 
-        Task DeleteAsync(int id);
+        Task<bool> DeleteAsync(int id);
     }
 }
