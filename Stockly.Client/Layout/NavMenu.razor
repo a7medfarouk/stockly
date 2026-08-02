@@ -1,39 +1,28 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">Stockly.Client</a>
-        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-    </div>
+<!-- Sidebar Brand -->
+<div class="sidebar-brand">
+    <h2>Stockly</h2>
+    <small>Inventory Management</small>
 </div>
 
-<div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
-    <nav class="nav flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Counter
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="weather">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Weather
-            </NavLink>
-        </div>
-    </nav>
-</div>
+<!-- Navigation Links -->
+<nav class="nav-items">
+    <div class="nav-section">Main</div>
 
-@code {
-    private bool collapseNavMenu = true;
+    <NavLink class="nav-item" href="" Match="NavLinkMatch.All">
+        <span class="nav-icon">🏠</span> Dashboard
+    </NavLink>
 
-    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+    <NavLink class="nav-item" href="products">
+        <span class="nav-icon">📦</span> Products
+    </NavLink>
 
-    private void ToggleNavMenu()
-    {
-        collapseNavMenu = !collapseNavMenu;
-    }
-}
+    <div class="nav-section">Orders</div>
+
+    <NavLink class="nav-item" href="orders/create">
+        <span class="nav-icon">🛒</span> New Order
+    </NavLink>
+
+    <NavLink class="nav-item" href="orders" Match="NavLinkMatch.All">
+        <span class="nav-icon">📋</span> Order History
+    </NavLink>
+</nav>

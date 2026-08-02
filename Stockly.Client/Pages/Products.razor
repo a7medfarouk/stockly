@@ -1,0 +1,140 @@
+@page "/products"
+@using Microsoft.AspNetCore.Components.Web
+@inject ProductService ProductService
+@inject IJSRuntime JS
+
+<PageTitle>Products - Stockly</PageTitle>
+
+<div class="page-header d-flex justify-content-between align-items-center">
+    <h1>Products</h1>
+    <a href="products/add" class="btn btn-primary">+ Add Product</a>
+</div>
+
+<div class="card mb-3">
+    <div class="d-flex gap-2">
+        <input class="form-control" placeholder="Search by name..." @bind="searchTerm" @bind:event="oninput" @onkeyup="HandleSearchKeyUp" />
+        <button class="btn btn-outline" @onclick="Search">Search</button>
+        <button class="btn btn-outline" @onclick="ClearSearch">Clear</button>
+    </div>
+</div>
+
+@if (isLoading)
+{
+    <div class="spinner"></div>
+}
+else
+{
+    <div class="card">
+        @if (products.Any())
+        {
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Price</th>
+                        <th>Stock</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in products)
+                    {
+                        <tr>
+                            <td>@p.Name</td>
+                            <td>$@p.Price.ToString("F2")</td>
+                            <td style="@(p.StockQuantity <= 5 ? "color: var(--warning);" : "")">@p.StockQuantity</td>
+                            <td class="d-flex gap-2">
+                                <a href="@($"products/edit/{p.Id}")" class="btn btn-outline btn-sm">Edit</a>
+                                <button class="btn btn-danger btn-sm" @onclick="() => Delete(p.Id)">Delete</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <p class="text-muted">No products found.</p>
+        }
+    </div>
+}
+
+@if (errorMessage != null)
+{
+    <div class="alert alert-danger mt-3">@errorMessage</div>
+}
+
+@code {
+    private List<ProductDto> products = new();
+    private bool isLoading = true;
+    private string? errorMessage;
+    private string searchTerm = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadProducts();
+    }
+
+    private async Task LoadProducts()
+    {
+        isLoading = true;
+        try
+        {
+            products = await ProductService.GetAllAsync();
+        }
+        catch
+        {
+            errorMessage = "Failed to load products.";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task Search()
+    {
+        isLoading = true;
+        try
+        {
+            products = string.IsNullOrWhiteSpace(searchTerm)
+                ? await ProductService.GetAllAsync()
+                : await ProductService.SearchAsync(searchTerm);
+        }
+        catch
+        {
+            errorMessage = "Search failed.";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task HandleSearchKeyUp(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+            await Search();
+    }
+
+    private async Task ClearSearch()
+    {
+        searchTerm = "";
+        await LoadProducts();
+    }
+
+    private async Task Delete(int id)
+    {
+        var confirmed = await JS.InvokeAsync<bool>("confirm", "Delete this product?");
+        if (!confirmed) return;
+
+        if (await ProductService.DeleteAsync(id))
+        {
+            products.RemoveAll(p => p.Id == id);
+        }
+        else
+        {
+            errorMessage = "Failed to delete product.";
+        }
+    }
+}

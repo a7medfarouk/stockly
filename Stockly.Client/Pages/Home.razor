@@ -1,7 +1,136 @@
-﻿@page "/"
+@page "/"
+@inject ProductService ProductService
+@inject OrderService OrderService
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Dashboard - Stockly</PageTitle>
 
-<h1>Hello, world!</h1>
+<div class="page-header">
+    <h1>Dashboard</h1>
+</div>
 
-Welcome to your new app.
+@if (isLoading)
+{
+    <div class="spinner"></div>
+}
+else
+{
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="card stat-card">
+                <div class="stat-value">@totalProducts</div>
+                <div class="stat-label">Total Products</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card stat-card">
+                <div class="stat-value" style="@(lowStockCount > 0 ? "color: var(--warning); -webkit-text-fill-color: var(--warning);" : "")">
+                    @lowStockCount
+                </div>
+                <div class="stat-label">Low Stock Items</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card stat-card">
+                <div class="stat-value">@totalOrders</div>
+                <div class="stat-label">Total Orders</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Quick Actions -->
+        <div class="col-md-6">
+            <div class="card">
+                <h5>⚡ Quick Actions</h5>
+                <p class="text-muted" style="font-size: 0.85rem; margin-bottom: 1rem;">
+                    Jump right into managing your inventory
+                </p>
+                <div class="d-flex gap-2 flex-wrap">
+                    <a href="products/add" class="btn btn-primary">+ Add Product</a>
+                    <a href="orders/create" class="btn btn-success">+ New Order</a>
+                    <a href="products" class="btn btn-outline">View All Products</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Orders -->
+        <div class="col-md-6">
+            <div class="card">
+                <h5>📋 Recent Orders</h5>
+                @if (recentOrders.Any())
+                {
+                    <table class="table mt-3">
+                        <thead>
+                            <tr>
+                                <th>Order #</th>
+                                <th>Date</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var order in recentOrders)
+                            {
+                                <tr style="cursor: pointer;" @onclick="() => ViewOrder(order.Id)">
+                                    <td><strong>#@order.Id</strong></td>
+                                    <td>@order.OrderDate.ToString("MMM dd, yyyy")</td>
+                                    <td><strong>$@order.TotalAmount.ToString("F2")</strong></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <p class="text-muted" style="margin-top: 1rem; font-size: 0.9rem;">No orders yet. Create your first one!</p>
+                }
+            </div>
+        </div>
+    </div>
+
+    @if (errorMessage != null)
+    {
+        <div class="alert alert-danger mt-3">@errorMessage</div>
+    }
+}
+
+@code {
+    [Inject] private NavigationManager Nav { get; set; } = default!;
+
+    private bool isLoading = true;
+    private string? errorMessage;
+    private int totalProducts;
+    private int lowStockCount;
+    private int totalOrders;
+    private List<OrderDto> recentOrders = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // Fetch products and orders in parallel
+            var productsTask = ProductService.GetAllAsync();
+            var ordersTask = OrderService.GetAllAsync();
+
+            var products = await productsTask;
+            var orders = await ordersTask;
+
+            totalProducts = products.Count;
+            lowStockCount = products.Count(p => p.StockQuantity <= 5);
+            totalOrders = orders.Count; 
+            recentOrders = orders.OrderByDescending(o => o.OrderDate).Take(5).ToList();
+        }
+        catch (Exception)
+        {
+            errorMessage = "Failed to load dashboard data. Make sure the API is running.";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void ViewOrder(int id)
+    {
+        Nav.NavigateTo($"orders/{id}");
+    }
+}

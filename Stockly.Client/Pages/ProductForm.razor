@@ -1,0 +1,128 @@
+@page "/products/add"
+@page "/products/edit/{Id:int}"
+@using System.ComponentModel.DataAnnotations
+@inject ProductService ProductService
+@inject NavigationManager Nav
+
+<PageTitle>@(IsEdit ? "Edit Product" : "Add Product") - Stockly</PageTitle>
+
+<div class="page-header">
+    <h1>@(IsEdit ? "Edit Product" : "Add Product")</h1>
+</div>
+
+@if (isLoading)
+{
+    <div class="spinner"></div>
+}
+else
+{
+    <div class="card" style="max-width: 500px;">
+        <EditForm Model="model" OnValidSubmit="Save">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="mb-3">
+                <label>Name</label>
+                <InputText class="form-control" @bind-Value="model.Name" />
+            </div>
+            <div class="mb-3">
+                <label>Description</label>
+                <InputTextArea class="form-control" @bind-Value="model.Description" />
+            </div>
+            <div class="mb-3">
+                <label>Price</label>
+                <InputNumber class="form-control" @bind-Value="model.Price" />
+            </div>
+            <div class="mb-3">
+                <label>Stock Quantity</label>
+                <InputNumber class="form-control" @bind-Value="model.StockQuantity" />
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Save</button>
+                <a href="products" class="btn btn-outline">Cancel</a>
+            </div>
+        </EditForm>
+    </div>
+}
+
+@if (errorMessage != null)
+{
+    <div class="alert alert-danger mt-3">@errorMessage</div>
+}
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    private bool IsEdit => Id.HasValue;
+    private bool isLoading = false;
+    private string? errorMessage;
+
+    private ProductFormModel model = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (IsEdit)
+        {
+            isLoading = true;
+            var product = await ProductService.GetByIdAsync(Id!.Value);
+            if (product != null)
+            {
+                model.Name = product.Name;
+                model.Description = product.Description;
+                model.Price = product.Price;
+                model.StockQuantity = product.StockQuantity;
+            }
+            else
+            {
+                errorMessage = "Product not found.";
+            }
+            isLoading = false;
+        }
+    }
+
+    private async Task Save()
+    {
+        errorMessage = null;
+        bool success;
+
+        if (IsEdit)
+        {
+            var dto = new UpdateProductDto
+            {
+                Name = model.Name,
+                Description = model.Description,
+                Price = model.Price,
+                StockQuantity = model.StockQuantity
+            };
+            success = await ProductService.UpdateAsync(Id!.Value, dto);
+        }
+        else
+        {
+            var dto = new CreateProductDto
+            {
+                Name = model.Name,
+                Description = model.Description,
+                Price = model.Price,
+                StockQuantity = model.StockQuantity
+            };
+            var result = await ProductService.CreateAsync(dto);
+            success = result != null;
+        }
+
+        if (success)
+            Nav.NavigateTo("products");
+        else
+            errorMessage = "Failed to save product.";
+    }
+
+    private class ProductFormModel
+    {
+        [Required]
+        public string Name { get; set; } = "";
+        public string? Description { get; set; }
+        [Range(0, double.MaxValue)]
+        public decimal Price { get; set; }
+        [Range(0, int.MaxValue)]
+        public int StockQuantity { get; set; }
+    }
+}

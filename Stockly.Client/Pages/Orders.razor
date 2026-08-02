@@ -1,0 +1,77 @@
+@page "/orders"
+@inject OrderService OrderService
+@inject NavigationManager Nav
+
+<PageTitle>Orders - Stockly</PageTitle>
+
+<div class="page-header d-flex justify-content-between align-items-center">
+    <h1>Orders</h1>
+    <a href="orders/create" class="btn btn-success">+ New Order</a>
+</div>
+
+@if (isLoading)
+{
+    <div class="spinner"></div>
+}
+else
+{
+    <div class="card">
+        @if (orders.Any())
+        {
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Order #</th>
+                        <th>Date</th>
+                        <th>Total</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var order in orders.OrderByDescending(o => o.OrderDate))
+                    {
+                        <tr style="cursor: pointer;" @onclick="() => ViewOrder(order.Id)">
+                            <td><strong>#@order.Id</strong></td>
+                            <td>@order.OrderDate.ToString("MMM dd, yyyy")</td>
+                            <td><strong>$@order.TotalAmount.ToString("F2")</strong></td>
+                            <td><a href="@($"orders/{order.Id}")" class="btn btn-outline btn-sm">View</a></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <p class="text-muted">No orders yet.</p>
+        }
+    </div>
+}
+
+@if (errorMessage != null)
+{
+    <div class="alert alert-danger mt-3">@errorMessage</div>
+}
+
+@code {
+    private List<OrderDto> orders = new();
+    private bool isLoading = true;
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            orders = await OrderService.GetAllAsync();
+        }
+        catch
+        {
+            errorMessage = "Failed to load orders.";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void ViewOrder(int id) => Nav.NavigateTo($"orders/{id}");
+}

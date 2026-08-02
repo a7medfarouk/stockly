@@ -1,0 +1,151 @@
+@page "/orders/create"
+@inject ProductService ProductService
+@inject OrderService OrderService
+@inject NavigationManager Nav
+
+<PageTitle>New Order - Stockly</PageTitle>
+
+<div class="page-header">
+    <h1>New Order</h1>
+</div>
+
+@if (isLoading)
+{
+    <div class="spinner"></div>
+}
+else
+{
+    <div class="card mb-3" style="max-width: 600px;">
+        <h5>Add Item</h5>
+        <div class="d-flex gap-2 align-items-end mt-2">
+            <div>
+                <label>Product</label>
+                <select class="form-control" @bind="selectedProductId">
+                    <option value="0">-- Select --</option>
+                    @foreach (var p in products)
+                    {
+                        <option value="@p.Id">@p.Name ($@p.Price.ToString("F2"))</option>
+                    }
+                </select>
+            </div>
+            <div>
+                <label>Quantity</label>
+                <input type="number" class="form-control" min="1" @bind="quantity" />
+            </div>
+            <button class="btn btn-outline" @onclick="AddItem">+ Add</button>
+        </div>
+    </div>
+
+    <div class="card mb-3" style="max-width: 600px;">
+        <h5>Order Items</h5>
+        @if (orderItems.Any())
+        {
+            <table class="table mt-3">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Qty</th>
+                        <th>Subtotal</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in orderItems)
+                    {
+                        <tr>
+                            <td>@item.ProductName</td>
+                            <td>@item.Quantity</td>
+                            <td>$@(item.Subtotal.ToString("F2"))</td>
+                            <td><button class="btn btn-danger btn-sm" @onclick="() => RemoveItem(item)">Remove</button></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            <p class="mt-2"><strong>Total: $@(orderItems.Sum(i => i.Subtotal).ToString("F2"))</strong></p>
+        }
+        else
+        {
+            <p class="text-muted mt-2">No items added yet.</p>
+        }
+    </div>
+
+    <button class="btn btn-success" @onclick="SubmitOrder" disabled="@(!orderItems.Any())">Create Order</button>
+}
+
+@if (errorMessage != null)
+{
+    <div class="alert alert-danger mt-3">@errorMessage</div>
+}
+
+@code {
+    private List<ProductDto> products = new();
+    private List<OrderItemRow> orderItems = new();
+    private int selectedProductId;
+    private int quantity = 1;
+    private bool isLoading = true;
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            products = await ProductService.GetAllAsync();
+        }
+        catch
+        {
+            errorMessage = "Failed to load products.";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void AddItem()
+    {
+        if (selectedProductId == 0 || quantity < 1) return;
+
+        var product = products.FirstOrDefault(p => p.Id == selectedProductId);
+        if (product == null) return;
+
+        orderItems.Add(new OrderItemRow
+        {
+            ProductId = product.Id,
+            ProductName = product.Name,
+            Quantity = quantity,
+            Subtotal = product.Price * quantity
+        });
+
+        selectedProductId = 0;
+        quantity = 1;
+    }
+
+    private void RemoveItem(OrderItemRow item) => orderItems.Remove(item);
+
+    private async Task SubmitOrder()
+    {
+        errorMessage = null;
+        var dto = new CreateOrderDto
+        {
+            Items = orderItems.Select(i => new CreateOrderItemDto
+            {
+                ProductId = i.ProductId,
+                Quantity = i.Quantity
+            }).ToList()
+        };
+
+        var result = await OrderService.CreateAsync(dto);
+        if (result != null)
+            Nav.NavigateTo($"orders/{result.Id}");
+        else
+            errorMessage = "Failed to create order.";
+    }
+
+    private class OrderItemRow
+    {
+        public int ProductId { get; set; }
+        public string ProductName { get; set; } = "";
+        public int Quantity { get; set; }
+        public decimal Subtotal { get; set; }
+    }
+}
