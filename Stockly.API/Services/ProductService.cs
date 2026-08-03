@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Stockly.API.DTOs;
+﻿using Stockly.API.DTOs;
 using Stockly.API.Models;
 using Stockly.API.Repositories.Interfaces;
 using Stockly.API.Services.Interfaces;

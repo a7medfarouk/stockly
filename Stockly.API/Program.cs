@@ -44,6 +44,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseCors("BlazorPolicy");
 app.MapControllers();
 
 var summaries = new[]
@@ -64,7 +65,6 @@ app.MapGet("/weatherforecast", () =>
     return forecast;
 })
 .WithName("GetWeatherForecast");
-app.UseCors("BlazorPolicy");
 app.Run();
 
 record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
