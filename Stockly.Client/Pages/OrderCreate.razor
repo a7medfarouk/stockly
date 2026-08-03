@@ -55,15 +55,18 @@ else
                     @foreach (var item in orderItems)
                     {
                         <tr>
-                            <td>@item.ProductName</td>
-                            <td>@item.Quantity</td>
-                            <td>$@(item.Subtotal.ToString("F2"))</td>
+                            <td style="color: var(--text); font-weight: 500;">@item.ProductName</td>
+                            <td style="color: var(--text-dim);">@item.Quantity</td>
+                            <td style="color: var(--success); font-weight: 600;">$@(item.Subtotal.ToString("F2"))</td>
                             <td><button class="btn btn-danger btn-sm" @onclick="() => RemoveItem(item)">Remove</button></td>
                         </tr>
                     }
                 </tbody>
             </table>
-            <p class="mt-2"><strong>Total: $@(orderItems.Sum(i => i.Subtotal).ToString("F2"))</strong></p>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; padding: 0.85rem 1rem; background: var(--bg-input); border-radius: 8px;">
+                <span style="color: var(--text-muted); font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">Order Total</span>
+                <span style="color: var(--success); font-size: 1.3rem; font-weight: 700;">$@(orderItems.Sum(i => i.Subtotal).ToString("F2"))</span>
+            </div>
         }
         else
         {

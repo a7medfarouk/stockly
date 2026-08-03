@@ -18,8 +18,14 @@ else
     </div>
 
     <div class="card mb-3">
-        <p><strong>Date:</strong> @order.OrderDate.ToString("MMM dd, yyyy")</p>
-        <p><strong>Total:</strong> $@order.TotalAmount.ToString("F2")</p>
+        <p style="margin: 0 0 0.5rem; color: var(--text-dim); font-size: 0.85rem;">
+            <span style="color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.75rem; font-weight: 600;">Date</span><br />
+            <span style="color: var(--text); font-size: 1rem;">@order.OrderDate.ToString("MMM dd, yyyy")</span>
+        </p>
+        <p style="margin: 0.75rem 0 0; color: var(--text-dim); font-size: 0.85rem;">
+            <span style="color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.75rem; font-weight: 600;">Total Amount</span><br />
+            <span style="color: var(--success); font-size: 1.4rem; font-weight: 700;">$@order.TotalAmount.ToString("F2")</span>
+        </p>
     </div>
 
     <div class="card">
@@ -37,10 +43,10 @@ else
                 @foreach (var item in order.Items)
                 {
                     <tr>
-                        <td>@item.ProductName</td>
-                        <td>@item.Quantity</td>
-                        <td>$@item.UnitPrice.ToString("F2")</td>
-                        <td>$@((item.UnitPrice * item.Quantity).ToString("F2"))</td>
+                        <td style="color: var(--text); font-weight: 500;">@item.ProductName</td>
+                        <td style="color: var(--text-dim);">@item.Quantity</td>
+                        <td style="color: var(--text-dim);">$@item.UnitPrice.ToString("F2")</td>
+                        <td style="color: var(--success); font-weight: 600;">$@((item.UnitPrice * item.Quantity).ToString("F2"))</td>
                     </tr>
                 }
             </tbody>

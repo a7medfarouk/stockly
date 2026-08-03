@@ -31,9 +31,9 @@ else
                     @foreach (var order in orders.OrderByDescending(o => o.OrderDate))
                     {
                         <tr style="cursor: pointer;" @onclick="() => ViewOrder(order.Id)">
-                            <td><strong>#@order.Id</strong></td>
-                            <td>@order.OrderDate.ToString("MMM dd, yyyy")</td>
-                            <td><strong>$@order.TotalAmount.ToString("F2")</strong></td>
+                            <td style="color: var(--text);"><strong>#@order.Id</strong></td>
+                            <td style="color: var(--text-dim);">@order.OrderDate.ToString("MMM dd, yyyy")</td>
+                            <td style="color: var(--success);"><strong>$@order.TotalAmount.ToString("F2")</strong></td>
                             <td><a href="@($"orders/{order.Id}")" class="btn btn-outline btn-sm">View</a></td>
                         </tr>
                     }
