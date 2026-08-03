@@ -22,9 +22,11 @@ else
                 <label>Product</label>
                 <select class="form-control" @bind="selectedProductId">
                     <option value="0">-- Select --</option>
-                    @foreach (var p in products)
+                    @foreach (var p in products.Where(p => p.StockQuantity > 0))
                     {
-                        <option value="@p.Id">@p.Name ($@p.Price.ToString("F2"))</option>
+                        <option value="@p.Id">
+                            @p.Name ($@p.Price.ToString("F2"))
+                        </option>
                     }
                 </select>
             </div>
@@ -108,16 +110,23 @@ else
         var product = products.FirstOrDefault(p => p.Id == selectedProductId);
         if (product == null) return;
 
-        orderItems.Add(new OrderItemRow
-        {
-            ProductId = product.Id,
-            ProductName = product.Name,
-            Quantity = quantity,
-            Subtotal = product.Price * quantity
-        });
+        var existingItem = orderItems.FirstOrDefault(i => i.ProductId == product.Id);
 
-        selectedProductId = 0;
-        quantity = 1;
+        if (existingItem != null)
+        {
+            existingItem.Quantity += quantity;
+            existingItem.Subtotal = existingItem.Quantity * product.Price;
+        }
+        else
+        {
+            orderItems.Add(new OrderItemRow
+            {
+                ProductId = product.Id,
+                ProductName = product.Name,
+                Quantity = quantity,
+                Subtotal = product.Price * quantity
+            });
+        }
     }
 
     private void RemoveItem(OrderItemRow item) => orderItems.Remove(item);

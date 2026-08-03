@@ -125,7 +125,7 @@ else
 
     private async Task Delete(int id)
     {
-        var confirmed = await JS.InvokeAsync<bool>("confirm", "Delete this product?");
+        var confirmed = await JS.InvokeAsync<bool>("confirm", "Are you sure you want to remove this product ? It will no longer appear in inventory.");
         if (!confirmed) return;
 
         if (await ProductService.DeleteAsync(id))
